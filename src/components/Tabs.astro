@@ -1,0 +1,31 @@
+---
+const tabs = ['focus', 'short break', 'long break'];
+
+// Add state for active tab
+let activeTab = 0;
+---
+
+<div class='relative'>
+  <ul
+    id='tab-items'
+    class='my-4 flex items-center justify-between rounded-full bg-gray-950 p-2 text-nowrap'
+  >
+    {
+      tabs.map((tab, index) => {
+        const isActive = index === activeTab;
+        return (
+          <li
+            data-tab={index}
+            class={`relative cursor-pointer rounded-full p-4 text-base leading-none font-medium transition-colors md:text-lg ${
+              isActive
+                ? 'text-shadow bg-green-300 text-black'
+                : 'text-slate-300'
+            }`}
+          >
+            {tab}
+          </li>
+        );
+      })
+    }
+  </ul>
+</div>

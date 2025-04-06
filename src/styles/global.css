@@ -1,6 +1,18 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+:root {
+  --timer-width: min(90vw, 40ch);
+}
 
 html,
 body {
-  @apply m-0 h-full w-full bg-slate-900 text-slate-50;
+  @apply m-0 h-full w-full bg-gray-900 text-gray-50;
+}
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+.text-muted {
+  @apply text-gray-400;
 }
