@@ -66,6 +66,7 @@ import Timer from '@components/Timer.astro';
           '{"work": 25, "shortBreak": 5, "longBreak": 15}',
       );
       if (JSON.stringify(currentDurations) !== JSON.stringify(durations)) {
+        console.log('Dispatching durationsUpdated event with:', durations);
         window.dispatchEvent(
           new CustomEvent('durationsUpdated', { detail: durations }),
         );
@@ -78,7 +79,7 @@ import Timer from '@components/Timer.astro';
     initializeDialog(dialog);
 
     // Initialize the settings from localStorage
-    const storedColor = localStorage.getItem('theme') || 'blue';
+    const storedColor = localStorage.getItem('theme') || 'green';
     const storedFont = localStorage.getItem('font') || 'sans';
     const storedDurations = JSON.parse(
       localStorage.getItem('durations') ||
@@ -140,8 +141,8 @@ import Timer from '@components/Timer.astro';
       const dialog = event.target as HTMLDialogElement;
       if (dialog.returnValue !== 'confirm') {
         // Get fresh values from localStorage when reverting
-        const currentStoredColor = localStorage.getItem('theme') || 'blue';
-        const currentStoredFont = localStorage.getItem('font') || 'sans';
+        const currentStoredColor = localStorage.getItem('theme') || storedColor;
+        const currentStoredFont = localStorage.getItem('font') || storedFont;
         const currentStoredDurations = JSON.parse(
           localStorage.getItem('durations') ||
             '{"work": 25, "shortBreak": 5, "longBreak": 15}',
@@ -196,7 +197,32 @@ import Timer from '@components/Timer.astro';
         const shortBreak = parseInt(formData.get('short-break') as string);
         const longBreak = parseInt(formData.get('long-break') as string);
         const durations = { work, shortBreak, longBreak };
+
+        // Get current stored durations for comparison
+        const currentDurations = JSON.parse(
+          localStorage.getItem('durations') ||
+            '{"work": 25, "shortBreak": 5, "longBreak": 15}',
+        );
+
+        // Only update theme and save to storage
         updateTheme(color, font, durations, true);
+
+        // Only reset timer if durations have changed
+        if (JSON.stringify(currentDurations) !== JSON.stringify(durations)) {
+          // Get the timer element and call its resetTimer function
+          const timer = document
+            .querySelector('#timer-text')
+            ?.closest('div[class*="relative"]');
+          if (timer) {
+            // Force a reset of the timer with new durations
+            const resetBtn = timer.querySelector(
+              '#reset-btn',
+            ) as HTMLButtonElement;
+            if (resetBtn) {
+              resetBtn.click();
+            }
+          }
+        }
       }
     });
   });

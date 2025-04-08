@@ -1,6 +1,27 @@
 <div
   class='relative my-16 flex aspect-square w-full items-center justify-center rounded-full'
 >
+  <!-- Add reset button -->
+  <button
+    id='reset-btn'
+    class='base-button absolute top-0 right-0 rounded-full bg-transparent p-2 text-gray-600 hover:bg-gray-200 dark:bg-transparent dark:text-white dark:hover:bg-gray-800'
+  >
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      fill='none'
+      viewBox='0 0 24 24'
+      stroke-width='1.5'
+      stroke='currentColor'
+      class='size-6'
+    >
+      <path
+        stroke-linecap='round'
+        stroke-linejoin='round'
+        d='M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99'
+      ></path>
+    </svg>
+  </button>
+
   <div class='absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2'>
     <span id='timer-text' class='font-mono text-6xl md:text-8xl'>25:00</span>
   </div>
@@ -86,11 +107,13 @@
     totalCycles: 4,
   };
 
+  // Load saved timer state first
   document.addEventListener('DOMContentLoaded', () => {
     // Progess ring code starts here
     const ring = document.getElementById('progress-ring');
     const timerText = document.getElementById('timer-text');
     const actionBtn = document.getElementById('timer-action');
+    const resetBtn = document.getElementById('reset-btn');
     const cycleIndicator = document.getElementById('cycle-indicator');
     const modeText = document.getElementById('mode-text');
 
@@ -98,6 +121,16 @@
     let cycleCount = 0;
     let totalTime = defaultDurations[mode];
     let remainingTime = totalTime;
+    let isRunning = false;
+
+    // Listen for custom durationsUpdated event
+    window.addEventListener('durationsUpdated', function (e) {
+      console.log('Timer received durationsUpdated event:', e.detail);
+      resetTimer(); // This will load fresh values from localStorage
+    });
+
+    const radius = 120;
+    const circumference = 2 * Math.PI * radius;
 
     // Load durations from localStorage
     const storedDurations = JSON.parse(
@@ -107,6 +140,33 @@
     defaultDurations.work = storedDurations.work * 60;
     defaultDurations.shortBreak = storedDurations.shortBreak * 60;
     defaultDurations.longBreak = storedDurations.longBreak * 60;
+
+    // Load saved timer state
+    const stateLoaded = loadTimerState();
+
+    if (stateLoaded) {
+      // Update UI to match loaded state
+      updateVisuals();
+      updateModeText();
+      updateActionIcon();
+      renderCycles();
+
+      if (isRunning) {
+        start();
+      }
+    } else {
+      // use default state if no state or if an error occured
+      mode = 'work';
+      cycleCount = 0;
+      totalTime = defaultDurations[mode];
+      remainingTime = totalTime;
+      isRunning = false;
+
+      updateVisuals();
+      updateModeText();
+      updateActionIcon();
+      renderCycles();
+    }
 
     // Listen for storage changes
     window.addEventListener('storage', (e) => {
@@ -118,54 +178,20 @@
         defaultDurations.shortBreak = newDurations.shortBreak * 60;
         defaultDurations.longBreak = newDurations.longBreak * 60;
 
-        // If timer is not running, update the current mode's duration
+        // If timer is not running, update the current mode's duration and reset timer
         if (!isRunning) {
           totalTime = defaultDurations[mode];
           remainingTime = totalTime;
           updateVisuals();
+          updateModeText();
+          renderCycles();
+          saveTimerState(); // Save the new state
         }
       }
     });
 
-    // Listen for custom durationsUpdated event
-    window.addEventListener('durationsUpdated', function (e) {
-      const newDurations = e.detail;
-      defaultDurations.work = newDurations.work * 60;
-      defaultDurations.shortBreak = newDurations.shortBreak * 60;
-      defaultDurations.longBreak = newDurations.longBreak * 60;
-
-      // If timer is not running, update the current mode's duration
-      if (!isRunning) {
-        totalTime = defaultDurations[mode];
-        remainingTime = totalTime;
-        updateVisuals();
-      }
-
-      //   If the timer is running then reset the timer
-      if (isRunning) {
-        // Reset timer state
-        isRunning = false;
-        mode = 'work';
-        cycleCount = 0;
-        totalTime = defaultDurations[mode];
-        remainingTime = totalTime;
-
-        // Update visuals
-        updateVisuals();
-        updateModeText();
-        updateActionIcon();
-        renderCycles();
-        start();
-      }
-    });
-
-    const radius = 120;
-    const circumference = 2 * Math.PI * radius;
-
     ring.style.strokeDasharray = circumference;
     ring.style.strokeDashoffset = 0; // full progress at start
-
-    let isRunning = false;
 
     function updateActionIcon() {
       const playIcon = actionBtn.querySelector('[data-state="play"]');
@@ -219,6 +245,7 @@
       isRunning = true;
       updateActionIcon();
       renderCycles();
+      saveTimerState(); // Save state when starting
 
       function tick() {
         if (!isRunning) return;
@@ -233,6 +260,11 @@
 
         // Round down for display
         timerText.textContent = formatTime(Math.ceil(remainingTime));
+
+        // Save state periodically (every 15 seconds)
+        if (Math.floor(remainingTime) % 15 === 0) {
+          saveTimerState();
+        }
 
         if (remainingTime > 0.1) {
           requestAnimationFrame(tick);
@@ -251,6 +283,7 @@
     function pause() {
       isRunning = false;
       updateActionIcon();
+      saveTimerState(); // Save state when pausing
     }
 
     function handleCycleCompletion() {
@@ -271,10 +304,10 @@
 
       // Add this line to update the active mode
       updateModeText();
-
       totalTime = defaultDurations[mode];
       remainingTime = totalTime;
       updateVisuals();
+      saveTimerState(); // Save state when changing modes
 
       // If a long break has just finished, stop the timer.
       if (finishedMode === 'longBreak') {
@@ -293,12 +326,97 @@
       renderCycles();
     }
 
+    function saveTimerState() {
+      const state = {
+        mode,
+        cycleCount,
+        remainingTime,
+        isRunning,
+        endTime: isRunning ? Date.now() + remainingTime * 1000 : null,
+        lastUpdated: Date.now(),
+      };
+      localStorage.setItem('timerState', JSON.stringify(state));
+    }
+
+    function loadTimerState() {
+      const savedState = localStorage.getItem('timerState');
+      //   Fail first
+      if (!savedState) return false;
+
+      try {
+        const state = JSON.parse(savedState);
+
+        // Calculate the remaining time if the timer was running
+        if (state.isRunning && state.endTime) {
+          const elapsedSinceLastUpdate =
+            (Date.now() - state.lastUpdated) / 1000;
+
+          // If more time has passed than was remaining, timer would have completed
+          if (elapsedSinceLastUpdate > state.remainingTime) {
+            // Handle timer completion logic
+            // We could either simulate completion of cycles or just reset
+            return false; // Reset timer instead of restoring an expired state
+          }
+
+          // Update remaining time
+          state.remainingTime = Math.max(
+            0,
+            (state.endTime - Date.now()) / 1000,
+          );
+        }
+
+        // Restore state
+        mode = state.mode;
+        cycleCount = state.cycleCount;
+        remainingTime = state.remainingTime;
+        isRunning = state.isRunning;
+        totalTime = defaultDurations[mode];
+
+        return true;
+      } catch (e) {
+        console.error('Error parsing timer state:', e);
+        return false;
+      }
+    }
+
+    function resetTimer() {
+      isRunning = false;
+      mode = 'work';
+      cycleCount = 0;
+
+      // Load fresh durations from localStorage
+      const storedDurations = JSON.parse(
+        localStorage.getItem('durations') ||
+          '{"work": 25, "shortBreak": 5, "longBreak": 15}',
+      );
+
+      // Update defaultDurations with stored values
+      defaultDurations.work = storedDurations.work * 60;
+      defaultDurations.shortBreak = storedDurations.shortBreak * 60;
+      defaultDurations.longBreak = storedDurations.longBreak * 60;
+
+      totalTime = defaultDurations[mode];
+      remainingTime = totalTime;
+
+      updateVisuals();
+      updateModeText();
+      updateActionIcon();
+      renderCycles();
+
+      // Clear saved state
+      localStorage.removeItem('timerState');
+    }
+
     actionBtn.addEventListener('click', () => {
       if (isRunning) {
         pause();
       } else {
         start();
       }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      resetTimer();
     });
 
     document.addEventListener('keydown', (e) => {
@@ -309,6 +427,13 @@
         } else {
           start();
         }
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'KeyR' && e.shiftKey) {
+        e.preventDefault();
+        resetTimer();
       }
     });
 
