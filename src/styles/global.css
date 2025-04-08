@@ -2,17 +2,128 @@
 
 :root {
   --timer-width: min(90vw, 40ch);
+  --dialog-width: min(90vw, 60ch);
+  --custom-ease: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --ease-squish-2: cubic-bezier(0.5, -0.3, 0.1, 1.5);
+  --ease-squish-3: cubic-bezier(0.5, -0.5, 0.1, 1.5);
+  --animation-scale-down: scale-down 0.5s var(--custom-ease);
+  --animation-slide-in-up: slide-in-up 0.5s var(--custom-ease);
+  --animation-slide-out-down: slide-out-down 0.5s var(--custom-ease);
+}
+
+@keyframes scale-down {
+  to {
+    transform: scale(0.75);
+  }
+}
+
+@keyframes slide-in-up {
+  0% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes slide-out-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+html[data-theme='red'] {
+  --color-primary: var(--color-red-600);
+}
+
+html[data-theme='blue'] {
+  --color-primary: var(--color-blue-600);
+}
+
+html[data-theme='green'] {
+  --color-primary: var(--color-green-600);
 }
 
 html,
 body {
-  @apply m-0 h-full w-full bg-gray-900 text-gray-50;
+  @apply m-0 h-full w-full bg-white text-gray-950 dark:bg-gray-950 dark:text-white;
 }
 
 html:has(dialog[open]) {
   overflow: hidden;
 }
 
+@layer components {
+  .base-button {
+    @apply cursor-pointer rounded-sm border-none bg-(--color-primary) px-5 py-[0.625rem] text-white focus-within:outline-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2;
+  }
+}
+
+dialog {
+  display: grid;
+  max-inline-size: var(--dialog-width);
+  max-block-size: min(80vh, 100%);
+  max-block-size: min(80dvb, 100%);
+  overflow: hidden;
+  margin: auto;
+  padding: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  transition: opacity 0.4s cubic-bezier(0.645, 0.045, 0.355, 1);
+  @apply rounded-lg bg-gray-50 text-gray-950 shadow-xl dark:bg-gray-800 dark:text-white;
+}
+
+dialog::backdrop {
+  backdrop-filter: blur(25px);
+  transition: backdrop-filter 0.4s ease;
+}
+
+dialog > form {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  max-block-size: 80vh;
+  max-block-size: 80dvb;
+}
+
+dialog > form > article {
+  max-block-size: 100%; /* safari */
+  @apply z-10 grid justify-start gap-4 overflow-y-auto overscroll-y-contain bg-white px-6 py-4 dark:bg-gray-700;
+}
+
+dialog > form > footer {
+  @apply flex flex-wrap items-center justify-end gap-4 border-t border-gray-200 bg-gray-100 px-6 py-4 dark:border-gray-600 dark:bg-gray-800;
+}
+
+@media (max-width: 768px) {
+  dialog {
+    margin-block-end: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  dialog {
+    animation: var(--animation-scale-down) forwards;
+    animation-timing-function: var(--ease-squish-3);
+  }
+
+  dialog[open] {
+    animation: var(--animation-slide-in-up) forwards;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (max-width: 768px) {
+  dialog {
+    animation: var(--animation-slide-out-down) forwards;
+    animation-timing-function: var(--ease-squish-2);
+  }
+}
+
+dialog:not([open]) {
+  pointer-events: none;
+  opacity: 0;
+}
+
 .text-muted {
-  @apply text-gray-400;
+  @apply text-gray-700 dark:text-gray-300;
 }

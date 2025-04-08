@@ -1,0 +1,231 @@
+---
+
+---
+
+<div class='mx-auto flex min-h-full w-full items-center justify-center'>
+  <div class='flex w-full max-w-(--timer-width) flex-col items-center'>
+    <h1 class='text-muted text-5xl font-bold'>Flow</h1>
+    <button onclick='dialog.showModal()' type='button' class='base-button'>
+      Open Settings
+    </button>
+    <dialog id='dialog' modal-mode='mega'>
+      <form method='dialog'>
+        <header
+          class='flex items-start justify-between gap-4 border-b border-gray-200 bg-gray-100 px-6 py-4 dark:border-gray-600 dark:bg-gray-800'
+        >
+          <h3 class='text-3xl font-bold'>Settings</h3>
+          <button
+            onclick="this.closest('dialog').close('close')"
+            class='base-button inline-flex aspect-square shrink-0 items-center justify-center rounded-full bg-white p-[0.75ch] text-gray-950 shadow-sm dark:bg-gray-600 dark:text-white'
+            ><svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke-width='1.5'
+              stroke='currentColor'
+              class='size-6'
+            >
+              <path
+                stroke-linecap='round'
+                stroke-linejoin='round'
+                d='M6 18 18 6M6 6l12 12'></path>
+            </svg>
+          </button>
+        </header>
+        <article class='px-6 py-4 dark:bg-gray-700'>
+          <div
+            class='mb-4 flex flex-col items-start gap-4 border-b border-gray-200 pb-4 dark:border-gray-600'
+          >
+            <h4 class='text-muted text-lg leading-none font-medium uppercase'>
+              Time (minutes)
+            </h4>
+            <div class='grid grid-cols-3 gap-4'>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='flow'
+                  class='text-muted text-sm leading-none font-bold'>Flow</label
+                >
+                <select
+                  id='flow'
+                  name='flow'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                >
+                  <option value='15'>15</option>
+                  <option value='20'>20</option>
+                  <option value='25'>25</option>
+                  <option value='30'>30</option>
+                  <option value='45'>45</option>
+                  <option value='50'>50</option>
+                  <option value='60'>60</option>
+                  <option value='90'>90</option>
+                </select>
+              </div>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='short-break'
+                  class='text-muted text-sm leading-none font-bold'
+                  >Short Break</label
+                >
+                <select
+                  id='short-break'
+                  name='short-break'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                >
+                  <option value='5'>5</option>
+                  <option value='10'>10</option>
+                  <option value='15'>15</option>
+                </select>
+              </div>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='long-break'
+                  class='text-muted text-sm leading-none font-bold'
+                  >Long Break</label
+                >
+                <select
+                  id='long-break'
+                  name='long-break'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                >
+                  <option value='15'>15</option>
+                  <option value='15'>20</option>
+                  <option value='15'>30</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- Font radio buttons -->
+          <div
+            class='mb-4 flex items-start justify-between gap-4 border-b border-gray-200 pb-4 dark:border-gray-600'
+          >
+            <h4 class='text-muted text-lg leading-none font-medium uppercase'>
+              Font
+            </h4>
+            <div class='grid grid-cols-3 gap-4'>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='font-sans'
+                  class='text-muted text-sm leading-none font-bold'>Sans</label
+                >
+                <input
+                  type='radio'
+                  id='font-sans'
+                  name='font'
+                  value='sans'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                />
+              </div>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='font-serif'
+                  class='text-muted text-sm leading-none font-bold'>Serif</label
+                >
+                <input
+                  type='radio'
+                  id='font-serif'
+                  name='font'
+                  value='serif'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                />
+              </div>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='font-mono'
+                  class='text-muted text-sm leading-none font-bold'>Mono</label
+                >
+                <input
+                  type='radio'
+                  id='font-mono'
+                  name='font'
+                  value='mono'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                />
+              </div>
+            </div>
+          </div>
+          <!-- Color radio buttons -->
+          <div class='flex flex-col items-start gap-4'>
+            <h4 class='text-muted text-lg leading-none font-medium uppercase'>
+              Color
+            </h4>
+            <div class='grid grid-cols-3 gap-4'>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='color-green'
+                  class='text-muted text-sm leading-none font-bold'>Green</label
+                >
+                <input
+                  type='radio'
+                  id='color-green'
+                  name='color'
+                  value='green'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                />
+              </div>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='color-red'
+                  class='text-muted text-sm leading-none font-bold'>Red</label
+                >
+                <input
+                  type='radio'
+                  id='color-red'
+                  name='color'
+                  value='red'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                />
+              </div>
+              <div class='flex flex-col gap-2'>
+                <label
+                  for='color-blue'
+                  class='text-muted text-sm leading-none font-bold'>Blue</label
+                >
+                <input
+                  type='radio'
+                  id='color-blue'
+                  name='color'
+                  value='blue'
+                  class='rounded bg-gray-200 p-2 dark:bg-gray-600'
+                />
+              </div>
+            </div>
+          </div>
+        </article>
+        <footer>
+          <menu>
+            <button type='submit' value='confirm' class='base-button'
+              >Apply</button
+            >
+          </menu>
+        </footer>
+      </form>
+    </dialog>
+  </div>
+</div>
+
+<script>
+  import initializeDialog from '../scripts/dialog.js';
+  document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.getElementById('dialog');
+    initializeDialog(dialog);
+
+    const dialogClosed = (event: Event) => {
+      const dialog = event.target as HTMLDialogElement;
+      console.log('Dialog closed', dialog);
+      console.info('Dialog user action:', dialog.returnValue);
+
+      if (dialog.returnValue === 'confirm') {
+        const form = dialog.querySelector('form');
+        if (!form) return;
+
+        // do stuff with the form values
+        const dialogFormData = new FormData(form);
+        console.info(
+          'Dialog form data',
+          Object.fromEntries(dialogFormData.entries()),
+        );
+      }
+    };
+    dialog?.addEventListener('closed', dialogClosed);
+  });
+</script>
