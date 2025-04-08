@@ -1,5 +1,14 @@
 @import 'tailwindcss';
 
+/* Register your custom font family and tell the browser where to find it. */
+@font-face {
+  font-family: 'MartianMono';
+  src: url('/fonts/MartianMono.ttf') format('ttf');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --timer-width: min(90vw, 40ch);
   --dialog-width: min(90vw, 60ch);
@@ -9,6 +18,8 @@
   --animation-scale-down: scale-down 0.5s var(--custom-ease);
   --animation-slide-in-up: slide-in-up 0.5s var(--custom-ease);
   --animation-slide-out-down: slide-out-down 0.5s var(--custom-ease);
+
+  --font-mono: 'MartianMono', monospace;
 }
 
 @keyframes scale-down {
@@ -41,8 +52,21 @@ html[data-theme='green'] {
   --color-primary: var(--color-green-600);
 }
 
+html[data-font='sans'] {
+  --font-family: var(--font-sans);
+}
+
+html[data-font='serif'] {
+  --font-family: var(--font-serif);
+}
+
+html[data-font='mono'] {
+  --font-family: var(--font-mono);
+}
+
 html,
 body {
+  font-family: var(--font-family);
   @apply m-0 h-full w-full bg-white text-gray-950 dark:bg-gray-950 dark:text-white;
 }
 
