@@ -1,11 +1,23 @@
+---
+const themeColor = '';
+const font = '';
+---
+
 <!doctype html>
-<html lang='en'>
+<html lang='en' data-theme={themeColor} data-font={font}>
   <head>
     <meta charset='UTF-8' />
     <meta name='viewport' content='width=device-width' />
     <link rel='icon' type='image/svg+xml' href='/favicon.svg' />
     <meta name='generator' content={Astro.generator} />
-    <title>Medz Timer</title>
+    <title>Simple Timer</title>
+    <script>
+      // Set theme before page renders to prevent flash
+      const storedTheme = localStorage.getItem('theme') || 'green';
+      const storedFont = localStorage.getItem('font') || 'sans';
+      document.documentElement.dataset.theme = storedTheme;
+      document.documentElement.dataset.font = storedFont;
+    </script>
   </head>
   <body>
     <slot />

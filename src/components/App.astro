@@ -1,0 +1,203 @@
+---
+import Dialog from '@components/Dialog.astro';
+import Timer from '@components/Timer.astro';
+---
+
+<div class='mx-auto flex min-h-full w-full items-center justify-center'>
+  <div class='flex w-full max-w-(--timer-width) flex-col items-center'>
+    <h1 class='text-5xl font-bold'>Simple Timer</h1>
+    <p class='text-muted pt-2 text-center text-pretty'>
+      Use the spacebar to start and stop the timer. Click the settings button to
+      change the timer duration and edit the theme.
+    </p>
+    <Timer />
+
+    <button
+      onclick='dialog.showModal()'
+      type='button'
+      class='base-button rounded-full bg-transparent p-2 text-gray-600 hover:bg-gray-200 dark:bg-transparent dark:text-white dark:hover:bg-gray-800'
+    >
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        fill='none'
+        viewBox='0 0 24 24'
+        stroke-width='1.5'
+        stroke='currentColor'
+        class='size-6'
+      >
+        <path
+          stroke-linecap='round'
+          stroke-linejoin='round'
+          d='M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z'
+        ></path>
+        <path
+          stroke-linecap='round'
+          stroke-linejoin='round'
+          d='M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z'></path>
+      </svg>
+    </button>
+
+    <Dialog />
+  </div>
+</div>
+
+<script>
+  import initializeDialog from '../scripts/dialog.js';
+
+  const updateTheme = (
+    color: string,
+    font: string,
+    durations: { work: number; shortBreak: number; longBreak: number },
+    saveToStorage = false,
+  ) => {
+    // Update the HTML attributes
+    document.documentElement.dataset.theme = color;
+    document.documentElement.dataset.font = font;
+
+    // Only save to localStorage if user clicks the apply button
+    if (saveToStorage) {
+      localStorage.setItem('theme', color);
+      localStorage.setItem('font', font);
+      localStorage.setItem('durations', JSON.stringify(durations));
+
+      // Only dispatch durationsUpdated event if durations have changed
+      const currentDurations = JSON.parse(
+        localStorage.getItem('durations') ||
+          '{"work": 25, "shortBreak": 5, "longBreak": 15}',
+      );
+      if (JSON.stringify(currentDurations) !== JSON.stringify(durations)) {
+        window.dispatchEvent(
+          new CustomEvent('durationsUpdated', { detail: durations }),
+        );
+      }
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.getElementById('dialog');
+    initializeDialog(dialog);
+
+    // Initialize the settings from localStorage
+    const storedColor = localStorage.getItem('theme') || 'blue';
+    const storedFont = localStorage.getItem('font') || 'sans';
+    const storedDurations = JSON.parse(
+      localStorage.getItem('durations') ||
+        '{"work": 25, "shortBreak": 5, "longBreak": 15}',
+    );
+
+    // Set initial radio button states
+    const colorInput = document.querySelector<HTMLInputElement>(
+      `input[name='color'][value="${storedColor}"]`,
+    );
+    const fontInput = document.querySelector<HTMLInputElement>(
+      `input[name='font'][value="${storedFont}"]`,
+    );
+
+    // Set initial select values
+    const workInput = document.querySelector<HTMLSelectElement>('#flow');
+    const shortBreakInput =
+      document.querySelector<HTMLSelectElement>('#short-break');
+    const longBreakInput =
+      document.querySelector<HTMLSelectElement>('#long-break');
+
+    if (colorInput) colorInput.checked = true;
+    if (fontInput) fontInput.checked = true;
+    if (workInput) workInput.value = storedDurations.work.toString();
+    if (shortBreakInput)
+      shortBreakInput.value = storedDurations.shortBreak.toString();
+    if (longBreakInput)
+      longBreakInput.value = storedDurations.longBreak.toString();
+
+    // Apply initial theme
+    updateTheme(storedColor, storedFont, storedDurations, true);
+
+    // Handle immediate theme changes
+    const colorInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[name="color"]',
+    );
+    const fontInputs =
+      document.querySelectorAll<HTMLInputElement>('input[name="font"]');
+
+    colorInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        const color = input.value;
+        const currentFont = document.documentElement.dataset.font || storedFont;
+        updateTheme(color, currentFont, storedDurations);
+      });
+    });
+
+    fontInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        const font = input.value;
+        const currentColor =
+          document.documentElement.dataset.theme || storedColor;
+        updateTheme(currentColor, font, storedDurations);
+      });
+    });
+
+    // Handle theme reversion during closing
+    dialog?.addEventListener('closing', (event: Event) => {
+      const dialog = event.target as HTMLDialogElement;
+      if (dialog.returnValue !== 'confirm') {
+        // Get fresh values from localStorage when reverting
+        const currentStoredColor = localStorage.getItem('theme') || 'blue';
+        const currentStoredFont = localStorage.getItem('font') || 'sans';
+        const currentStoredDurations = JSON.parse(
+          localStorage.getItem('durations') ||
+            '{"work": 25, "shortBreak": 5, "longBreak": 15}',
+        );
+
+        // Revert to stored settings if dialog is being closed without confirmation
+        updateTheme(
+          currentStoredColor,
+          currentStoredFont,
+          currentStoredDurations,
+          false,
+        );
+
+        // Reset form radio buttons to stored values
+        const colorInput = dialog.querySelector<HTMLInputElement>(
+          `input[name='color'][value="${currentStoredColor}"]`,
+        );
+        const fontInput = dialog.querySelector<HTMLInputElement>(
+          `input[name='font'][value="${currentStoredFont}"]`,
+        );
+
+        // Reset select values to stored values
+        const workInput = dialog.querySelector<HTMLSelectElement>('#flow');
+        const shortBreakInput =
+          dialog.querySelector<HTMLSelectElement>('#short-break');
+        const longBreakInput =
+          dialog.querySelector<HTMLSelectElement>('#long-break');
+
+        if (colorInput) colorInput.checked = true;
+        if (fontInput) fontInput.checked = true;
+        if (workInput) workInput.value = currentStoredDurations.work.toString();
+        if (shortBreakInput)
+          shortBreakInput.value = currentStoredDurations.shortBreak.toString();
+        if (longBreakInput)
+          longBreakInput.value = currentStoredDurations.longBreak.toString();
+      }
+    });
+
+    // Handle saving to localStorage after dialog is fully closed
+    dialog?.addEventListener('closed', (event) => {
+      const dialog = event.target as HTMLDialogElement;
+      console.log('Dialog closed', dialog);
+      console.info('Dialog user action:', dialog.returnValue);
+
+      if (dialog.returnValue === 'confirm') {
+        const form = dialog.querySelector('form');
+        if (!form) return;
+        const formData = new FormData(form);
+        const color = formData.get('color') as string;
+        const font = formData.get('font') as string;
+        const work = parseInt(formData.get('flow') as string);
+        const shortBreak = parseInt(formData.get('short-break') as string);
+        const longBreak = parseInt(formData.get('long-break') as string);
+        const durations = { work, shortBreak, longBreak };
+        updateTheme(color, font, durations, true);
+      }
+    });
+  });
+</script>
